@@ -1,0 +1,229 @@
+@import url('https://fonts.googleapis.com/css?family=Lato:300,400,700&subset=latin-ext');
+@import '~normalize-scss/sass/normalize/import-now';
+@import '~ol/ol.css';
+
+html {
+  box-sizing: border-box;
+  min-height: 100%;
+}
+
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+
+body {
+  font-size: 12px;
+  line-height: 14px;
+  font-family: 'Lato', sans-serif;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased !important;
+  position: relative;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased !important;
+}
+
+a {
+  color: #0f2bd1;
+  cursor: pointer;
+}
+
+.app {
+  display: flex;
+  height: 100vh;
+}
+
+.map {
+  display: block;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  & > * {
+    height: inherit;
+  }
+  &:-webkit-full-screen {
+    display: block !important;
+    height: 100% !important;
+    width: 100% !important;
+  }
+  &:fullscreen, &:-moz-full-screen, &:-ms-fullscreen {
+    display: block !important;
+    height: 100% !important;
+    width: 100% !important;
+  }
+}
+
+.sidebar {
+  background-color: #fffdd9;
+  box-shadow: #2e34364a -5px 0px 20px 0px;
+  z-index: 10;
+  flex: 300px 0 0;
+  max-width: 300px;
+  padding: 5px;
+  & > section {
+    background-color: #d2cfd0;
+    margin: 5px;
+    & > header {
+      padding: 5px;
+      background-color: #8f8a8a;
+      color: #ffffff;
+      display: flex;
+      & > img {
+        display: block;
+        height: 16px;
+        width: 16px;
+        margin-right: 5px;
+      }
+      & > h3 {
+        padding: 0;
+        margin: 0;
+        font-size: 14px;
+        line-height: 16px;
+        font-weight: bold;
+        text-transform: uppercase;
+        text-align: center;
+      }
+    }
+    & > main {
+      background-color: #ffffff;
+      border: solid #ced2cd 1px;
+    }
+  }
+}
+
+.busStopSection {
+  & > header {
+    display: flex;
+    flex-direction: row;
+    padding: 2px;
+    & > span {
+      cursor: pointer;
+      display: block;
+      height: 24px;
+      width: 24px;
+      margin: 2px;
+      background-color: #989799;
+      background-position: center center;
+      background-size: contain;
+      background-repeat: no-repeat;
+      &:hover, &.active {
+        background-color: #000000;
+      }
+      &.select {
+        background-image: url('../images/select.svg');
+      }
+      &.create {
+        background-image: url('../images/create.svg');
+      }
+      &.move {
+        background-image: url('../images/move.svg');
+      }
+      &.remove {
+        background-image: url('../images/remove.svg');
+      }
+    }
+    & > .status {
+      line-height: 20px;
+      padding: 4px;
+      font-size: 12px;
+    }
+  }
+  & > main {
+    padding: 5px;
+  }
+  & > ul {
+    max-width: 100%;
+    overflow: auto;
+    max-height: 250px;
+    list-style-type: none;
+    margin: 0;
+    display: flex;
+    flex-direction: row;
+    padding: 2px;
+    & > li {
+      display: flex;
+      flex-direction: row;
+      padding: 5px;
+      margin: 2px;
+      background-color: #003399;
+      color: #ffffff;
+      &:hover {
+        cursor: default;
+        background-color: #0b991e;
+      }
+      & > .icon {
+        display: block;
+        height: 24px;
+        width: 24px;
+        background: url('../images/busStop.svg') center center no-repeat;
+        background-size: contain;
+      }
+    }
+  }
+}
+
+.busStopGroupSection {
+  & > ul {
+    overflow: auto;
+    max-height: 250px;
+    list-style-type: none;
+    padding: 2px;
+    margin: 0;
+    & > li {
+      display: flex;
+      flex-direction: row;
+      padding: 5px 10px;
+      margin: 2px;
+      background-color: #afb7db;
+      color: #000000;
+      &:hover {
+        cursor: default;
+        background-color: #6691d5;
+      }
+      &.create {
+        background-color: #73d57a;
+      }
+      & > .name {
+        flex: 100%;
+        &[contentEditable="true"] {
+          background-color: #ffffff;
+        }
+      }
+      & > .actions {
+        display: flex;
+        flex-direction: row;
+        & > * {
+          margin-left: 5px;
+          display: block;
+          width: 14px;
+          height: 14px;
+          text-align: center;
+          border-radius: 50%;
+        }
+        & > .counter {
+          color: #0c0c0c;
+          font-weight: bold;
+          background-color: #ffffff;
+          cursor: zoom-in;
+        }
+        & > .add {
+          color: #0c0c0c;
+          font-weight: bold;
+          background: #009c02 url('../images/create.svg') center center no-repeat;
+          background-size: contain;
+          cursor: pointer;
+        }
+        & > .remove {
+          color: #0c0c0c;
+          font-weight: bold;
+          background: #d06d71 url('../images/remove.svg') center center no-repeat;
+          background-size: contain;
+          cursor: pointer;
+        }
+      }
+    }
+  }
+}
