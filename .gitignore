@@ -1,4 +1,8 @@
-.idea
+/.idea/
+/tmp
+/deploy/servers.yml
+/build/
+/build.tar.gz
 ###> symfony/framework-bundle ###
 /.env
 /public/bundles/

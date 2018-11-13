@@ -1,0 +1,19 @@
+ssh_multiplexing: true
+keep_releases: 1
+default_stage: 'dev'
+writable_use_sudo: false
+clear_use_sudo: false
+bin_dir: 'bin'
+var_dir: 'var'
+web_dir: 'public'
+shared_dirs:
+- 'var/log'
+- 'var/sessions'
+- 'public/files'
+shared_files:
+- '.env'
+- 'public/.htaccess'
+writable_dirs:
+- 'var/cache'
+- 'var/log'
+- 'var/sessions'
