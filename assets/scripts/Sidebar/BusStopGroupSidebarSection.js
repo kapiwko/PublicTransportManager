@@ -180,6 +180,7 @@ export default class BusStopGroupSidebarSection
         window.eventBus.subscribe('busStopGroupUpdated', (group) => [update(group), sort()]);
         window.eventBus.subscribe('busStopGroupsLoaded', (groups) => [groups.forEach(create), sort()]);
         window.eventBus.subscribe('busStopUpdated', updateCounter);
+        window.eventBus.subscribe('busStopsLoaded', updateCounter);
 
         this.class = () => 'busStopGroupSection';
         this.title = () => 'Grupy przystankowe';
