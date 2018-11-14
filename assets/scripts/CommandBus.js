@@ -20,7 +20,7 @@ export default function CommandBus()
             return;
         }
 
-        commandCallbacksPair.callback(args);
+        return Promise.resolve(commandCallbacksPair.callback(args));
     };
 
     function findCommandCallbacksPair(commandType) {

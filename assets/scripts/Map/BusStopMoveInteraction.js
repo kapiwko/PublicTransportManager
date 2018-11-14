@@ -43,12 +43,15 @@ export default class BusStopMoveInteraction
             feature.getGeometry().setCoordinates(feature.get('coordinates'));
         });
 
-        const update = () => window.commandBus.dispatch('changeBusStopsLocation', changed()
-            .map((feature) => ({
+        const update = () => {
+            window.commandBus.dispatch('setMapLoading', true);
+            window.commandBus.dispatch('changeBusStopsLocation', changed().map((feature) => ({
                 id: feature.get('id'),
                 location: toLonLat(feature.getGeometry().getCoordinates()),
-            }))
-        );
+            }))).then(() => {
+                window.commandBus.dispatch('setMapLoading', false);
+            });
+        };
 
         window.eventBus.subscribe('mapFeatureHovered', (d) => {
             if (!enabled) {

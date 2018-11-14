@@ -111,7 +111,14 @@ export default class BusStopRemoveInteraction
             window.eventBus.post('busStopRemoveCountChanged', selected.size);
         });
 
-        const remove = () => window.commandBus.dispatch('removeBusStops', [...selected].map((id) => ({id})));
+        const remove = () => {
+            window.commandBus.dispatch('setMapLoading', true);
+            window.commandBus.dispatch('removeBusStops', [...selected].map((id) => ({
+                id
+            }))).then(() => {
+                window.commandBus.dispatch('setMapLoading', false);
+            });
+        };
 
         const keydown = (event) => {
             switch(event.key) {

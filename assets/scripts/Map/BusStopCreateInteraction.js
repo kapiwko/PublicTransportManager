@@ -29,11 +29,12 @@ export default class BusStopCreateInteraction
         });
 
         const create = () => {
-            window.commandBus.dispatch('createBusStops', [...features]
-                .map((feature) => ({
-                    location: toLonLat(feature.getGeometry().getCoordinates()),
-                })
-            ));
+            window.commandBus.dispatch('setMapLoading', true);
+            window.commandBus.dispatch('createBusStops', [...features].map((feature) => ({
+                location: toLonLat(feature.getGeometry().getCoordinates()),
+            }))).then(() => {
+                window.commandBus.dispatch('setMapLoading', false);
+            });
         };
 
         const clear = () => {
