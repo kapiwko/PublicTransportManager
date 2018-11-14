@@ -44,7 +44,7 @@ export default class BusStopSource
         };
 
         window.eventBus.subscribe('busStopsLoaded', load);
-        window.eventBus.subscribe('busStopUpdated', (busStop) => [remove(busStop.id()), create(busStop)]);
+        window.eventBus.subscribe('busStopLoaded', (busStop) => [remove(busStop.id()), create(busStop)]);
         window.eventBus.subscribe('busStopRemoved', (id) => remove(id));
         window.commandBus.register('busStopSourceSetMode', setMode);
 

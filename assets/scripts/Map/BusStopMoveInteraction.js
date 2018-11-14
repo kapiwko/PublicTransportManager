@@ -36,26 +36,19 @@ export default class BusStopMoveInteraction
                 return initial[0] !== current[0] || initial[1] !== current[1];
             });
 
-        const init = () => {
-            window.eventBus.post('busStopMoveCountChanged', 0);
-        };
+        const clear = () => window.eventBus.post('busStopMoveCountChanged', 0);
 
-        const clear = () => {
-            changed().forEach((feature) => {
-                changed().forEach((feature) => features.get(feature.get('id')).setStyle());
-                feature.getGeometry().setCoordinates(feature.get('coordinates'));
-            });
-            window.eventBus.post('busStopMoveCountChanged', 0);
-        };
+        const restore = () => changed().forEach((feature) => {
+            changed().forEach((feature) => features.get(feature.get('id')).setStyle());
+            feature.getGeometry().setCoordinates(feature.get('coordinates'));
+        });
 
-        const update = () => {
-            changed()
-                .forEach((feature) => window.commandBus.dispatch('changeBusStopLocation', {
-                    id: feature.get('id'),
-                    location: toLonLat(feature.getGeometry().getCoordinates()),
-                }));
-            window.eventBus.post('busStopMoveCountChanged', 0);
-        };
+        const update = () => window.commandBus.dispatch('changeBusStopsLocation', changed()
+            .map((feature) => ({
+                id: feature.get('id'),
+                location: toLonLat(feature.getGeometry().getCoordinates()),
+            }))
+        );
 
         window.eventBus.subscribe('mapFeatureHovered', (d) => {
             if (!enabled) {
@@ -71,10 +64,12 @@ export default class BusStopMoveInteraction
         const keydown = (event) => {
             switch(event.key) {
                 case "Escape":
+                    restore();
                     clear();
                     break;
                 case "Enter":
                     update();
+                    clear();
             }
         };
 
@@ -83,7 +78,7 @@ export default class BusStopMoveInteraction
                 return;
             }
             enabled = true;
-            init();
+            clear();
             window.document.addEventListener('keydown', keydown);
             window.commandBus.dispatch('setMapCursor', '');
             window.commandBus.dispatch('addInteractionToMap', moveInteraction);

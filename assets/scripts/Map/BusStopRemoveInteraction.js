@@ -73,7 +73,7 @@ export default class BusStopRemoveInteraction
         const init = () => {
             clickInteraction.getFeatures().clear();
             hoverInteraction.getFeatures().clear();
-            window.eventBus.post('busStopSelectCountChanged', 0);
+            window.eventBus.post('busStopRemoveCountChanged', 0);
         };
 
         const clear = () => {
@@ -111,8 +111,7 @@ export default class BusStopRemoveInteraction
             window.eventBus.post('busStopRemoveCountChanged', selected.size);
         });
 
-        const remove = () => selected
-            .forEach((id) => window.commandBus.dispatch('removeBusStop', {id}));
+        const remove = () => window.commandBus.dispatch('removeBusStops', [...selected].map((id) => ({id})));
 
         const keydown = (event) => {
             switch(event.key) {

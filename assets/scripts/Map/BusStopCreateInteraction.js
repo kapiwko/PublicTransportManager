@@ -29,9 +29,11 @@ export default class BusStopCreateInteraction
         });
 
         const create = () => {
-            features.forEach((feature) => window.commandBus.dispatch('createBusStop', {
+            window.commandBus.dispatch('createBusStops', [...features]
+                .map((feature) => ({
                     location: toLonLat(feature.getGeometry().getCoordinates()),
-                }));
+                })
+            ));
         };
 
         const clear = () => {

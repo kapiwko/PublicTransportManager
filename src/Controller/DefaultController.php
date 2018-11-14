@@ -43,61 +43,74 @@ class DefaultController extends Controller
     }
 
     /**
-     * @Route("/getBusStop", name="getBusStop")
+     * @Route("/getBusStops", name="getBusStops")
      */
-    public function getBusStop(Request $request, GetBusStopQuery $query): Response
+    public function getBusStops(Request $request, GetBusStopQuery $query): Response
     {
-        $data = json_decode($request->getContent(), true);
-        $id = Uuid::fromString($data['id']);
-        $data = $query($id);
+        $data = [];
+        foreach (json_decode($request->getContent(), true) as $id) {
+            $data[] = $query(Uuid::fromString($id));
+        }
         return new JsonResponse($data);
     }
 
     /**
-     * @Route("/createBusStop", name="createBusStop")
+     * @Route("/createBusStops", name="createBusStops")
      */
-    public function createBusStop(Request $request, MessageBusInterface $commandBus): Response
+    public function createBusStops(Request $request, MessageBusInterface $commandBus): Response
     {
-        $data = json_decode($request->getContent(), true);
-        $id = Uuid::uuid4();
-        $location = $data['location'];
-        $commandBus->dispatch(new CreateBusStopCommand($id, new Point($location[0], $location[1])));
-        return new JsonResponse($id);
+        $ids = [];
+        foreach (json_decode($request->getContent(), true) as $data) {
+            $id = Uuid::uuid4();
+            $location = $data['location'];
+            $commandBus->dispatch(new CreateBusStopCommand($id, new Point($location[0], $location[1])));
+            $ids[] = $id;
+        }
+        return new JsonResponse($ids);
     }
 
     /**
-     * @Route("/changeBusStopLocation", name="changeBusStopLocation")
+     * @Route("/changeBusStopsLocation", name="changeBusStopsLocation")
      */
-    public function changeBusStopLocation(Request $request, MessageBusInterface $commandBus): Response
+    public function changeBusStopsLocation(Request $request, MessageBusInterface $commandBus): Response
     {
-        $data = json_decode($request->getContent(), true);
-        $id = Uuid::fromString($data['id']);
-        $location = $data['location'];
-        $commandBus->dispatch(new ChangeBusStopLocationCommand($id, new Point($location[0], $location[1])));
-        return new JsonResponse($id);
+        $ids = [];
+        foreach (json_decode($request->getContent(), true) as $data) {
+            $id = Uuid::fromString($data['id']);
+            $location = $data['location'];
+            $commandBus->dispatch(new ChangeBusStopLocationCommand($id, new Point($location[0], $location[1])));
+            $ids[] = $id;
+        }
+        return new JsonResponse($ids);
     }
 
     /**
-     * @Route("/changeBusStopGroup", name="changeBusStopGroup")
+     * @Route("/changeBusStopsGroup", name="changeBusStopsGroup")
      */
-    public function changeBusStopGroup(Request $request, MessageBusInterface $commandBus): Response
+    public function changeBusStopsGroup(Request $request, MessageBusInterface $commandBus): Response
     {
-        $data = json_decode($request->getContent(), true);
-        $id = Uuid::fromString($data['id']);
-        $group = $data['group'] ? Uuid::fromString($data['group']) : null;
-        $commandBus->dispatch(new ChangeBusStopGroupCommand($id, $group));
-        return new JsonResponse($id);
+        $ids = [];
+        foreach (json_decode($request->getContent(), true) as $data) {
+            $id = Uuid::fromString($data['id']);
+            $group = $data['group'] ? Uuid::fromString($data['group']) : null;
+            $commandBus->dispatch(new ChangeBusStopGroupCommand($id, $group));
+            $ids[] = $id;
+        }
+        return new JsonResponse($ids);
     }
 
     /**
-     * @Route("/removeBusStop", name="removeBusStop")
+     * @Route("/removeBusStops", name="removeBusStops")
      */
-    public function removeBusStop(Request $request, MessageBusInterface $commandBus): Response
+    public function removeBusStops(Request $request, MessageBusInterface $commandBus): Response
     {
-        $data = json_decode($request->getContent(), true);
-        $id = Uuid::fromString($data['id']);
-        $commandBus->dispatch(new DeleteBusStopCommand($id));
-        return new JsonResponse($id);
+        $ids = [];
+        foreach (json_decode($request->getContent(), true) as $data) {
+            $id = Uuid::fromString($data['id']);
+            $commandBus->dispatch(new DeleteBusStopCommand($id));
+            $ids[] = $id;
+        }
+        return new JsonResponse($ids);
     }
 
     /**
@@ -110,49 +123,59 @@ class DefaultController extends Controller
     }
 
     /**
-     * @Route("/getBusStopGroup", name="getBusStopGroup")
+     * @Route("/getBusStopGroups", name="getBusStopGroups")
      */
-    public function getBusStopGroup(Request $request, GetBusStopGroupQuery $query): Response
+    public function getBusStopGroups(Request $request, GetBusStopGroupQuery $query): Response
     {
-        $data = json_decode($request->getContent(), true);
-        $id = Uuid::fromString($data['id']);
-        $data = $query($id);
+        $data = [];
+        foreach (json_decode($request->getContent(), true) as $id) {
+            $data[] = $query(Uuid::fromString($id));
+        }
         return new JsonResponse($data);
     }
 
     /**
-     * @Route("/createBusStopGroup", name="createBusStopGroup")
+     * @Route("/createBusStopGroups", name="createBusStopGroups")
      */
-    public function createBusStopGroup(Request $request, MessageBusInterface $commandBus): Response
+    public function createBusStopGroups(Request $request, MessageBusInterface $commandBus): Response
     {
-        $data = json_decode($request->getContent(), true);
-        $id = Uuid::uuid4();
-        $commandBus->dispatch(new CreateBusStopGroupCommand($id, $data['name']));
-        foreach ($data['busStops'] as $busStop) {
-            $commandBus->dispatch(new ChangeBusStopGroupCommand(Uuid::fromString($busStop), $id));
+        $ids = [];
+        foreach (json_decode($request->getContent(), true) as $data) {
+            $id = Uuid::uuid4();
+            $commandBus->dispatch(new CreateBusStopGroupCommand($id, $data['name']));
+            foreach ($data['busStops'] as $busStop) {
+                $commandBus->dispatch(new ChangeBusStopGroupCommand(Uuid::fromString($busStop), $id));
+            }
+            $ids[] = $id;
         }
-        return new JsonResponse($id);
+        return new JsonResponse($ids);
     }
 
     /**
-     * @Route("/updateBusStopGroup", name="updateBusStopGroup")
+     * @Route("/updateBusStopGroups", name="updateBusStopGroups")
      */
-    public function updateBusStopGroup(Request $request, MessageBusInterface $commandBus): Response
+    public function updateBusStopGroups(Request $request, MessageBusInterface $commandBus): Response
     {
-        $data = json_decode($request->getContent(), true);
-        $id = Uuid::fromString($data['id']);
-        $commandBus->dispatch(new UpdateBusStopGroupCommand($id, $data['name']));
-        return new JsonResponse($id);
+        $ids = [];
+        foreach (json_decode($request->getContent(), true) as $data) {
+            $id = Uuid::fromString($data['id']);
+            $commandBus->dispatch(new UpdateBusStopGroupCommand($id, $data['name']));
+            $ids[] = $id;
+        }
+        return new JsonResponse($ids);
     }
 
     /**
-     * @Route("/removeBusStopGroup", name="removeBusStopGroup")
+     * @Route("/removeBusStopGroups", name="removeBusStopGroups")
      */
-    public function removeBusStopGroup(Request $request, MessageBusInterface $commandBus): Response
+    public function removeBusStopGroups(Request $request, MessageBusInterface $commandBus): Response
     {
-        $data = json_decode($request->getContent(), true);
-        $id = Uuid::fromString($data['id']);
-        $commandBus->dispatch(new DeleteBusStopGroupCommand($id));
-        return new JsonResponse($id);
+        $ids = [];
+        foreach (json_decode($request->getContent(), true) as $data) {
+            $id = Uuid::fromString($data['id']);
+            $commandBus->dispatch(new DeleteBusStopGroupCommand($id));
+            $ids[] = $id;
+        }
+        return new JsonResponse($ids);
     }
 }

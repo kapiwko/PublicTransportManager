@@ -1,6 +1,5 @@
 /* global System,window */
 
-import "whatwg-fetch";
 import BusStopGroupRepository from "./Model/BusStopGroupRepository";
 import BusStopRepository from "./Model/BusStopRepository";
 import Map from "./Map/Map";
@@ -22,7 +21,7 @@ export default class App {
         window.commandBus.dispatch('addSidebarSection', new BusStopSidebarSection());
         window.commandBus.dispatch('addSidebarSection', new BusStopGroupSidebarSection());
         window.commandBus.dispatch('addLayerToMap', new BusStopLayer().layer());
-        window.commandBus.dispatch('loadBusStops');
-        window.commandBus.dispatch('loadBusStopGroups');
+        window.commandBus.dispatch('loadAllBusStops');
+        window.commandBus.dispatch('loadAllBusStopGroups');
     }
 }

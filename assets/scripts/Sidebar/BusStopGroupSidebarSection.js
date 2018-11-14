@@ -10,10 +10,10 @@ function createAddItem() {
     name.classList.add('name');
     const create = () => {
         if (name.innerText.length) {
-            window.commandBus.dispatch('createBusStopGroup', {
+            window.commandBus.dispatch('createBusStopGroups', [{
                 name: name.innerText,
                 busStops: window.queryBus.dispatch('getSelectedBusStops'),
-            });
+            }]);
             name.innerText = '';
             window.commandBus.dispatch('clearSelectedBusStops');
         }
@@ -67,10 +67,10 @@ function createItem(group) {
                         name.innerText = group.name();
                     }
                     if (event.key === "Enter") {
-                        window.commandBus.dispatch('updateBusStopGroup', {
+                        window.commandBus.dispatch('updateBusStopGroups', [{
                             id: group.id(),
                             name: name.innerText,
-                        });
+                        }]);
                     }
                 }
             }
@@ -88,12 +88,7 @@ function createItem(group) {
     });
     const actions = createActions(item);
     const counter = createCounter(actions);
-    const updateCounter = () => {
-        counter.innerText = window.queryBus.dispatch('getBusStopsByGroup', group.id()).length;
-        if (group.name() === 'A' || group.name() === 'B') {
-            console.log(group.name(), counter.innerText);
-        }
-    };
+    const updateCounter = () => counter.innerText = window.queryBus.dispatch('getBusStopsByGroup', group.id()).length;
     updateCounter();
     counter.addEventListener('click', () => {
         const list = window.queryBus.dispatch('getBusStopsByGroup', group.id())
@@ -130,9 +125,9 @@ function createRemove(actions, group) {
     remove.title = 'Usuń tą grupę przystankową';
     remove.classList.add('remove');
     remove.addEventListener('click', () => {
-        window.commandBus.dispatch('removeBusStopGroup', {
+        window.commandBus.dispatch('removeBusStopGroups', [{
             id: group.id(),
-        });
+        }]);
     });
     actions.appendChild(remove);
     return remove;
@@ -177,9 +172,9 @@ export default class BusStopGroupSidebarSection
         const updateCounter = () => byId.forEach((data) => data.updateCounter());
 
         window.eventBus.subscribe('busStopGroupRemoved', remove);
-        window.eventBus.subscribe('busStopGroupUpdated', (group) => [update(group), sort()]);
+        window.eventBus.subscribe('busStopGroupLoaded', (group) => [update(group), sort()]);
         window.eventBus.subscribe('busStopGroupsLoaded', (groups) => [groups.forEach(create), sort()]);
-        window.eventBus.subscribe('busStopUpdated', updateCounter);
+        window.eventBus.subscribe('busStopLoaded', updateCounter);
         window.eventBus.subscribe('busStopsLoaded', updateCounter);
 
         this.class = () => 'busStopGroupSection';
