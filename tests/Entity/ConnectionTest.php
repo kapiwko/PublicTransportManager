@@ -22,13 +22,13 @@ class ConnectionTest extends TestCase
         $this->assertEquals(3, $connection->to()->location()->getX());
         $this->assertCount(2, $connection->geometry()->getPoints());
 
-        $connection->changeGeometry(new LineString([new Point(1,1), new Point(2,2), new Point(3,3)]));
+        $connection->changeGeometry(new LineString([new Point(1, 1), new Point(2, 2), new Point(3, 3)]));
         $this->assertCount(3, $connection->geometry()->getPoints());
 
         $this->expectException(\LogicException::class);
-        $connection->changeGeometry(new LineString([new Point(0,0), new Point(2,2), new Point(3,3)]));
+        $connection->changeGeometry(new LineString([new Point(0, 0), new Point(2, 2), new Point(3, 3)]));
 
         $this->expectException(\LogicException::class);
-        $connection->changeGeometry(new LineString([new Point(1,1), new Point(2,2), new Point(4,4)]));
+        $connection->changeGeometry(new LineString([new Point(1, 1), new Point(2, 2), new Point(4, 4)]));
     }
 }
