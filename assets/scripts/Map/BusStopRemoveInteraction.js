@@ -113,11 +113,10 @@ export default class BusStopRemoveInteraction
 
         const remove = () => {
             window.commandBus.dispatch('setMapLoading', true);
-            window.commandBus.dispatch('removeBusStops', [...selected].map((id) => ({
+            return window.commandBus.dispatch('removeBusStops', [...selected].map((id) => ({
                 id
-            }))).then(() => {
-                window.commandBus.dispatch('setMapLoading', false);
-            });
+            })))
+                .then(() => window.commandBus.dispatch('setMapLoading', false));
         };
 
         const keydown = (event) => {
@@ -126,8 +125,7 @@ export default class BusStopRemoveInteraction
                     clear();
                     break;
                 case "Enter":
-                    remove();
-                    clear();
+                    remove().then(clear);
             }
         };
 

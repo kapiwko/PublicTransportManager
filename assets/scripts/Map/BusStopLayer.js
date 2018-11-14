@@ -5,13 +5,12 @@ export default class BusStopLayer
 {
     constructor()
     {
-        const busStopSource = new BusStopSource();
+        const source = new BusStopSource();
         const layer = new VectorLayer({
-            source: busStopSource.getSource(),
+            source: source.getSource(),
         });
 
         this.layer = () => layer;
-
 
         window.eventBus.subscribe('busStopSourceLoaded', () => {
             window.commandBus.dispatch('fitMapView', layer.getSource().getExtent());

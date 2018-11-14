@@ -30,11 +30,10 @@ export default class BusStopCreateInteraction
 
         const create = () => {
             window.commandBus.dispatch('setMapLoading', true);
-            window.commandBus.dispatch('createBusStops', [...features].map((feature) => ({
+            return window.commandBus.dispatch('createBusStops', [...features].map((feature) => ({
                 location: toLonLat(feature.getGeometry().getCoordinates()),
-            }))).then(() => {
-                window.commandBus.dispatch('setMapLoading', false);
-            });
+            })))
+                .then(() => window.commandBus.dispatch('setMapLoading', false));
         };
 
         const clear = () => {
@@ -51,8 +50,7 @@ export default class BusStopCreateInteraction
                     clear();
                     break;
                 case "Enter":
-                    create();
-                    clear();
+                    create().then(clear);
             }
         };
 

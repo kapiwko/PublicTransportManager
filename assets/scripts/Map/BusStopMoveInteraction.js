@@ -45,12 +45,11 @@ export default class BusStopMoveInteraction
 
         const update = () => {
             window.commandBus.dispatch('setMapLoading', true);
-            window.commandBus.dispatch('changeBusStopsLocation', changed().map((feature) => ({
+            return window.commandBus.dispatch('changeBusStopsLocation', changed().map((feature) => ({
                 id: feature.get('id'),
                 location: toLonLat(feature.getGeometry().getCoordinates()),
-            }))).then(() => {
-                window.commandBus.dispatch('setMapLoading', false);
-            });
+            })))
+                .then(() => window.commandBus.dispatch('setMapLoading', false));
         };
 
         window.eventBus.subscribe('mapFeatureHovered', (d) => {
@@ -71,8 +70,7 @@ export default class BusStopMoveInteraction
                     clear();
                     break;
                 case "Enter":
-                    update();
-                    clear();
+                    update().then(clear);
             }
         };
 
