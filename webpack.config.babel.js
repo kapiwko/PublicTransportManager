@@ -7,7 +7,7 @@ Encore
     .addEntry('app', './assets/scripts/main.js')
     .enableSingleRuntimeChunk()
 
-    .addStyleEntry('global', './assets/styles/main.scss')
+    .addStyleEntry('style', './assets/styles/main.scss')
     .enableSassLoader()
 
     .copyFiles({from: './assets/images', to: 'images/[path][name].[hash:8].[ext]'})
