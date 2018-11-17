@@ -84,6 +84,9 @@ a {
   & > section {
     background-color: #d2cfd0;
     margin: 5px;
+    &.hidden {
+      display: none;
+    }
     & > header {
       padding: 5px;
       background-color: #8f8a8a;

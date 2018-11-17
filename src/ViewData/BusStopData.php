@@ -37,7 +37,6 @@ class BusStopData implements JsonSerializable
     public function jsonSerialize(): array
     {
         return [
-            'id' => $this->id,
             'location' => $this->location->toArray(),
             'group' => $this->group,
         ];

@@ -69,7 +69,7 @@ export default class BusStopSelectInteraction
         const init = () => {
             clickInteraction.getFeatures().clear();
             hoverInteraction.getFeatures().clear();
-            window.eventBus.post('busStopSelectCountChanged', selected.size);
+            window.eventBus.post('busStopSelect.event.countChanged', selected.size);
         };
 
         const clear = () => {
@@ -78,19 +78,19 @@ export default class BusStopSelectInteraction
             updateCollection(selected, []);
             clickInteraction.getFeatures().clear();
             hoverInteraction.getFeatures().clear();
-            window.eventBus.post('busStopSelectCountChanged', selected.size);
+            window.eventBus.post('busStopSelect.event.countChanged', selected.size);
         };
 
         clickInteraction.on('select', (event) => {
             const ids = event.target.getFeatures().getArray().map((feature) => feature.get('id'));
             updateCollection(selected, ids);
-            window.eventBus.post('busStopSelectCountChanged', selected.size);
+            window.eventBus.post('busStopSelect.event.countChanged', selected.size);
         });
 
         hoverInteraction.on('select', (event) => {
             const ids = event.target.getFeatures().getArray().map((feature) => feature.get('id'));
             updateCollection(highlighted, ids);
-            window.commandBus.dispatch('setMapCursor', ids.length ? 'pointer' : '');
+            window.commandBus.dispatch('map.command.setCursor', ids.length ? 'pointer' : '');
         });
 
         dragInteraction.on('boxstart', () => {
@@ -103,11 +103,12 @@ export default class BusStopSelectInteraction
             const features = source.getFeaturesInExtent(extent);
             const ids = features.map((feature) => feature.get('id'));
             updateCollection(selected, ids, true);
-            window.eventBus.post('busStopSelectCountChanged', selected.size);
+            window.eventBus.post('busStopSelect.event.countChanged', selected.size);
         });
 
-        window.queryBus.register('getSelectedBusStops', () => Array.from(selected));
-        window.commandBus.register('clearSelectedBusStops', clear);
+        window.queryBus.register('busStopSelect.query.get', () => [...selected]);
+        window.commandBus.register('busStopSelect.command.clear', clear);
+        window.commandBus.register('busStopSelect.command.highlight', (ids) => updateCollection(highlighted, ids));
 
         const keydown = (event) => {
             switch(event.key) {
@@ -124,10 +125,10 @@ export default class BusStopSelectInteraction
             enabled = true;
             init();
             window.document.addEventListener('keydown', keydown);
-            window.commandBus.dispatch('setMapCursor', '');
-            window.commandBus.dispatch('addInteractionToMap', clickInteraction);
-            window.commandBus.dispatch('addInteractionToMap', hoverInteraction);
-            window.commandBus.dispatch('addInteractionToMap', dragInteraction);
+            window.commandBus.dispatch('map.command.setCursor', '');
+            window.commandBus.dispatch('map.command.addInteraction', clickInteraction);
+            window.commandBus.dispatch('map.command.addInteraction', hoverInteraction);
+            window.commandBus.dispatch('map.command.addInteraction', dragInteraction);
         };
 
         this.disable = () => {
@@ -137,10 +138,10 @@ export default class BusStopSelectInteraction
             enabled = false;
             clear();
             window.document.removeEventListener('keydown', keydown);
-            window.commandBus.dispatch('setMapCursor', '');
-            window.commandBus.dispatch('removeInteractionFromMap', clickInteraction);
-            window.commandBus.dispatch('removeInteractionFromMap', hoverInteraction);
-            window.commandBus.dispatch('removeInteractionFromMap', dragInteraction);
+            window.commandBus.dispatch('map.command.setCursor', '');
+            window.commandBus.dispatch('map.command.removeInteraction', clickInteraction);
+            window.commandBus.dispatch('map.command.removeInteraction', hoverInteraction);
+            window.commandBus.dispatch('map.command.removeInteraction', dragInteraction);
         };
     }
 }

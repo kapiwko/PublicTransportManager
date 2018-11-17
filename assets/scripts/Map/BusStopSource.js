@@ -16,7 +16,7 @@ export default class BusStopSource
         const setMode = (mode) => {
             interactions.forEach((i) => i.disable());
             interactions.get(mode).enable();
-            window.eventBus.post('busStopSourceModeChanged', mode);
+            window.eventBus.post('busStopSource.event.modeChanged', mode);
         };
 
         const create = (busStop) => {
@@ -33,22 +33,26 @@ export default class BusStopSource
             }
         };
 
-        const load = (busStopList) => {
-            busStopList.forEach(create);
+        const load = (busStops) => {
+            busStops.map(create);
             interactions.set('select', new BusStopSelectInteraction(source, features));
             interactions.set('create', new BusStopCreateInteraction(source, features));
             interactions.set('move', new BusStopMoveInteraction(source, features));
             interactions.set('remove', new BusStopRemoveInteraction(source, features));
             setMode('select');
-            window.eventBus.post('busStopSourceLoaded');
+            window.eventBus.post('busStopSource.event.loaded');
         };
 
-        window.eventBus.subscribe('busStopsLoaded', load);
-        window.eventBus.subscribe('busStopLoaded', (busStop) => [remove(busStop.id()), create(busStop)]);
-        window.eventBus.subscribe('busStopRemoved', (id) => remove(id));
-        window.commandBus.register('busStopSourceSetMode', setMode);
+        window.eventBus.subscribe('busStop.event.loaded', load);
+        window.eventBus.subscribe('busStop.event.updated', (busStop) => {
+            remove(busStop.id());
+            if (busStop.data()) {
+                create(busStop);
+            }
+        });
+
+        window.commandBus.register('busStopSource.command.setMode', setMode);
 
         this.getSource = () => source;
-
     }
 }

@@ -4,6 +4,7 @@ namespace App\Query;
 
 use App\Entity\BusStop;
 use App\ViewData\BusStopData;
+use App\ViewData\BusStopDataCollection;
 use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\EntityManagerInterface;
 use Ramsey\Uuid\Uuid;
@@ -17,10 +18,7 @@ class GetAllBusStopsQuery implements QueryInterface
         $this->entityManager = $entityManager;
     }
 
-    /**
-     * @return array|BusStopData[]
-     */
-    public function __invoke(): array
+    public function __invoke(): BusStopDataCollection
     {
         $queryBuilder = $this->entityManager->createQueryBuilder();
         $queryBuilder->from(BusStop::class, 'busStop');
@@ -32,9 +30,11 @@ class GetAllBusStopsQuery implements QueryInterface
         $queryBuilder->groupBy('busStop.id');
         $query = $queryBuilder->getQuery();
 
-        return array_map(function (array $data): BusStopData {
+        $collection = new BusStopDataCollection();
+        foreach ($query->getResult(AbstractQuery::HYDRATE_ARRAY) as $data) {
             $group = $data['group'] ? Uuid::fromString($data['group']) : null;
-            return new BusStopData($data['id'], $data['location'], $group);
-        }, $query->getResult(AbstractQuery::HYDRATE_ARRAY));
+            $collection->add(new BusStopData($data['id'], $data['location'], $group));
+        }
+        return $collection;
     }
 }

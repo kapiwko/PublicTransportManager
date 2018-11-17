@@ -12,8 +12,8 @@ export default class BusStopLayer
 
         this.layer = () => layer;
 
-        window.eventBus.subscribe('busStopSourceLoaded', () => {
-            window.commandBus.dispatch('fitMapView', layer.getSource().getExtent());
+        window.eventBus.subscribe('busStopSource.event.loaded', () => {
+            window.commandBus.dispatch('map.command.fitView', layer.getSource().getExtent());
         });
     }
 }

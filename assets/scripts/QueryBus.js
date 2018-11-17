@@ -2,7 +2,7 @@ export default function QueryBus()
 {
     const queryCallbacksPairs = [];
 
-    this.register = function(queryType, callback) {
+    this.register = (queryType, callback) => {
         const queryCallbacksPair = findQueryCallbacksPair(queryType);
 
         if (queryCallbacksPair) {
@@ -12,7 +12,7 @@ export default function QueryBus()
         }
     };
 
-    this.dispatch = function(queryType, args) {
+    this.dispatch = (queryType, args) => {
         const queryCallbacksPair = findQueryCallbacksPair(queryType);
 
         if(!queryCallbacksPair) {
@@ -22,11 +22,13 @@ export default function QueryBus()
         return queryCallbacksPair.callback(args);
     };
 
-    function findQueryCallbacksPair(queryType) {
+    function findQueryCallbacksPair(queryType)
+    {
         return queryCallbacksPairs.find(queryObject => queryObject.queryType === queryType);
     }
 
-    function QueryCallbacksPair(queryType, callback) {
+    function QueryCallbacksPair(queryType, callback)
+    {
         this.queryType = queryType;
         this.callback = callback;
     }

@@ -2,7 +2,7 @@ export default function EventBus()
 {
     const eventCallbacksPairs = [];
 
-    this.subscribe = function(eventType, callback) {
+    this.subscribe = (eventType, callback) => {
         const eventCallbacksPair = findEventCallbacksPair(eventType);
 
         if (eventCallbacksPair) {
@@ -12,7 +12,7 @@ export default function EventBus()
         }
     };
 
-    this.post = function(eventType, args) {
+    this.post = (eventType, args) => {
         const eventCallbacksPair = findEventCallbacksPair(eventType);
 
         if(!eventCallbacksPair) {
@@ -23,11 +23,13 @@ export default function EventBus()
         eventCallbacksPair.callbacks.forEach(callback => callback(args));
     };
 
-    function findEventCallbacksPair(eventType) {
+    function findEventCallbacksPair(eventType)
+    {
         return eventCallbacksPairs.find(eventObject => eventObject.eventType === eventType);
     }
 
-    function EventCallbacksPair(eventType, callback) {
+    function EventCallbacksPair(eventType, callback)
+    {
         this.eventType = eventType;
         this.callbacks = [callback];
     }

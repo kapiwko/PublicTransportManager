@@ -26,7 +26,7 @@ export default class BusStopSidebarSection
 
         const createMode = (name, title, description) => {
             const button = createButton(header, name, title);
-            button.addEventListener('click', () => window.commandBus.dispatch('busStopSourceSetMode', name));
+            button.addEventListener('click', () => window.commandBus.dispatch('busStopSource.command.setMode', name));
             modes.set(name, {
                 button,
                 description
@@ -55,15 +55,16 @@ export default class BusStopSidebarSection
 
         const status = createStatus(header);
 
-        window.eventBus.subscribe('busStopSelectCountChanged', (qty) => status.innerText = 'Zaznaczono: ' + qty);
-        window.eventBus.subscribe('busStopCreateCountChanged', (qty) => status.innerText = 'Do utworzenia: ' + qty);
-        window.eventBus.subscribe('busStopRemoveCountChanged', (qty) => status.innerText = 'Do usunięcia: ' + qty);
-        window.eventBus.subscribe('busStopMoveCountChanged', (qty) => status.innerText = 'Do przesunięcia: ' + qty);
-        window.eventBus.subscribe('busStopSourceModeChanged', (currentMode) => {
+        window.eventBus.subscribe('busStopSelect.event.countChanged', (qty) => status.innerText = 'Zaznaczono: ' + qty);
+        window.eventBus.subscribe('busStopCreate.event.countChanged', (qty) => status.innerText = 'Do utworzenia: ' + qty);
+        window.eventBus.subscribe('busStopRemove.event.countChanged', (qty) => status.innerText = 'Do usunięcia: ' + qty);
+        window.eventBus.subscribe('busStopMove.event.countChanged', (qty) => status.innerText = 'Do przesunięcia: ' + qty);
+        window.eventBus.subscribe('busStopSource.event.modeChanged', (currentMode) => {
             modes.forEach((data, mode) => data.button.classList.toggle('active', mode === currentMode));
             main.innerText = modes.get(currentMode).description;
         });
 
+        this.setTarget = (target) => this.target = target;
         this.class = () => 'busStopSection';
         this.title = () => 'Przystanki';
         this.icon = () => icon;

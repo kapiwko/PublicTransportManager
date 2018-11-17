@@ -31,8 +31,9 @@ export default class Sidebar
                 section,
                 target,
             });
+            section.setTarget(target);
         };
 
-        window.commandBus.register('addSidebarSection', add);
+        window.commandBus.register('sidebar.command.addSection', add);
     }
 }

@@ -3,6 +3,7 @@ import {Style} from "ol/style";
 import {toLonLat} from "ol/proj";
 import IconCreator from "./IconCreator";
 import busIcon from "../../images/busStop.svg";
+import BusStop from "../Model/BusStop";
 
 export default class BusStopCreateInteraction
 {
@@ -25,23 +26,24 @@ export default class BusStopCreateInteraction
                 image: (new IconCreator(24)).drawCircle('#ffffff').drawCircle('#83bf84', 23).drawImage(busIcon).create(),
                 zIndex: 4,
             }));
-            window.eventBus.post('busStopCreateCountChanged', features.size);
+            window.eventBus.post('busStopCreate.event.countChanged', features.size);
         });
 
-        const create = () => {
-            window.commandBus.dispatch('setMapLoading', true);
-            return window.commandBus.dispatch('createBusStops', [...features].map((feature) => ({
+        const create = () => window.commandBus.dispatch('busStop.command.update', [...features].map((feature) => {
+            const busStop = new BusStop(true, {
+                group: null,
                 location: toLonLat(feature.getGeometry().getCoordinates()),
-            })))
-                .then(() => window.commandBus.dispatch('setMapLoading', false));
-        };
+            });
+            feature.set('id', busStop.id());
+            return busStop;
+        }));
 
         const clear = () => {
             interaction.finishDrawing();
             interaction.removeLastPoint();
             features.forEach((feature) => source.removeFeature(feature));
             features.clear();
-            window.eventBus.post('busStopCreateCountChanged', 0);
+            window.eventBus.post('busStopCreate.event.countChanged', 0);
         };
 
         const keydown = (event) => {
@@ -50,7 +52,8 @@ export default class BusStopCreateInteraction
                     clear();
                     break;
                 case "Enter":
-                    create().then(clear);
+                    create();
+                    clear();
             }
         };
 
@@ -61,8 +64,8 @@ export default class BusStopCreateInteraction
             enabled = true;
             clear();
             window.document.addEventListener('keydown', keydown);
-            window.commandBus.dispatch('setMapCursor', 'crosshair');
-            window.commandBus.dispatch('addInteractionToMap', interaction);
+            window.commandBus.dispatch('map.command.setCursor', 'crosshair');
+            window.commandBus.dispatch('map.command.addInteraction', interaction);
         };
 
         this.disable = () => {
@@ -72,8 +75,8 @@ export default class BusStopCreateInteraction
             enabled = false;
             clear();
             window.document.removeEventListener('keydown', keydown);
-            window.commandBus.dispatch('setMapCursor', '');
-            window.commandBus.dispatch('removeInteractionFromMap', interaction);
+            window.commandBus.dispatch('map.command.setCursor', '');
+            window.commandBus.dispatch('map.command.removeInteraction', interaction);
         };
     }
 }

@@ -1,9 +1,13 @@
-export default class BusStopGroup
+import Data from "./Data";
+
+export default class BusStopGroup extends Data
 {
-    constructor(data)
+    constructor(id = null, data = null)
     {
-        this.id = () => data.id;
-        this.name = () => data.name;
-        this.data = () => data;
+        super('busStopGroup', id, data);
+        const {
+            name = null,
+        } = {...data};
+        this.name = () => name;
     }
 }

@@ -1,6 +1,11 @@
 import {boundingExtent} from "ol/extent";
 import {fromLonLat} from "ol/proj";
 import icon from "../../images/busStopGroup.svg";
+import BusStopGroup from "../Model/BusStopGroup";
+import BusStop from "../Model/BusStop";
+
+const listByGroup = (group) => window.queryBus.dispatch('busStop.query.list')
+    .filter((busStop) => busStop.group() === group);
 
 function createAddItem() {
     const item = window.document.createElement('li');
@@ -10,12 +15,19 @@ function createAddItem() {
     name.classList.add('name');
     const create = () => {
         if (name.innerText.length) {
-            window.commandBus.dispatch('createBusStopGroups', [{
+            const group = new BusStopGroup(true, {
                 name: name.innerText,
-                busStops: window.queryBus.dispatch('getSelectedBusStops'),
-            }]);
+            });
+            window.commandBus.dispatch('busStopGroup.command.update', [group]);
+            window.queryBus.dispatch('busStopSelect.query.get').map((id) => {
+                const busStop = window.queryBus.dispatch('busStop.query.get', id);
+                window.commandBus.dispatch('busStop.command.update', [new BusStop(id, {
+                    ...busStop.data(),
+                    group: group.id(),
+                })]);
+            });
             name.innerText = '';
-            window.commandBus.dispatch('clearSelectedBusStops');
+            window.commandBus.dispatch('busStopSelect.command.clear');
         }
     };
     name.addEventListener('keydown', (event) => {
@@ -33,7 +45,7 @@ function createAddItem() {
     const actions = createActions(item);
     const counter = createCounter(actions);
     counter.innerText = "0";
-    window.eventBus.subscribe('busStopSelectCountChanged', (qty) => counter.innerText = qty);
+    window.eventBus.subscribe('busStopSelect.event.countChanged', (qty) => counter.innerText = qty);
     const add = createAdd(actions);
     add.addEventListener('click', create);
     return item;
@@ -67,10 +79,10 @@ function createItem(group) {
                         name.innerText = group.name();
                     }
                     if (event.key === "Enter") {
-                        window.commandBus.dispatch('updateBusStopGroups', [{
-                            id: group.id(),
+                        window.commandBus.dispatch('busStopGroup.command.update', [new BusStopGroup(group.id(), {
+                            ...group.data(),
                             name: name.innerText,
-                        }]);
+                        })]);
                     }
                 }
             }
@@ -80,23 +92,22 @@ function createItem(group) {
     item.appendChild(name);
     item.title = group.name();
     item.addEventListener('mouseenter', () => {
-        const ids = window.queryBus.dispatch('getBusStopsByGroup', group.id()).map((b) => b.id());
-        //window.commandBus.dispatch('highlightBusStopFeatures', ids);
+        const ids = listByGroup(group.id()).map((busStop) => busStop.id());
+        window.commandBus.dispatch('map.command.setCursor', ids.length ? 'pointer' : '');
+        window.commandBus.dispatch('busStopSelect.command.highlight', ids);
     });
     item.addEventListener('mouseleave', () => {
-        //window.commandBus.dispatch('highlightBusStopFeatures', []);
+        window.commandBus.dispatch('busStopSelect.command.highlight', []);
     });
     const actions = createActions(item);
     const counter = createCounter(actions);
-    const updateCounter = () => counter.innerText = window.queryBus.dispatch('getBusStopsByGroup', group.id()).length;
-    updateCounter();
+    const updateCounter = (qty) => counter.innerText = qty;
     counter.addEventListener('click', () => {
-        const list = window.queryBus.dispatch('getBusStopsByGroup', group.id())
-            .map((busStop) => fromLonLat([busStop.lon(), busStop.lat()]));
+        const list = listByGroup(group.id()).map((busStop) => fromLonLat(busStop.location()));
         if (!list.length) {
             return;
         }
-        window.commandBus.dispatch('fitMapView', boundingExtent(list));
+        window.commandBus.dispatch('map.command.fitView', boundingExtent(list));
     });
     createRemove(actions, group);
     return {
@@ -125,9 +136,13 @@ function createRemove(actions, group) {
     remove.title = 'Usuń tą grupę przystankową';
     remove.classList.add('remove');
     remove.addEventListener('click', () => {
-        window.commandBus.dispatch('removeBusStopGroups', [{
-            id: group.id(),
-        }]);
+        listByGroup(group.id()).map((busStop) => {
+            window.commandBus.dispatch('busStop.command.update', [new BusStop(busStop.id(), {
+                ...busStop.data(),
+                group: null,
+            })]);
+        });
+        window.commandBus.dispatch('busStopGroup.command.update', [new BusStopGroup(group.id(), null)]);
     });
     actions.appendChild(remove);
     return remove;
@@ -138,6 +153,16 @@ export default class BusStopGroupSidebarSection
     constructor()
     {
         const byId = new Map();
+        const counts = new Map();
+
+        const updateCounts = () => {
+            counts.clear();
+            counts.set(null, 0);
+            window.queryBus.dispatch('busStopGroup.query.list').forEach((busStopGroup) => counts.set(busStopGroup.id(), 0));
+            window.queryBus.dispatch('busStop.query.list')
+                .forEach((busStop) => counts.set(busStop.group(), counts.get(busStop.group()) + 1));
+        };
+
         const actions = window.document.createElement('div');
         const list = window.document.createElement('ul');
         list.appendChild(createAddItem());
@@ -148,18 +173,17 @@ export default class BusStopGroupSidebarSection
             byId.set(group.id(), data);
         };
 
-        const remove = (id) => {
-            if (byId.has(id)) {
-                const data = byId.get(id);
+        const remove = (group) => {
+            if (byId.has(group.id())) {
+                const data = byId.get(group.id());
                 data.item.parentNode.removeChild(data.item);
-                byId.delete(id);
+                byId.delete(group.id());
             }
         };
 
         const update = (group) => {
-            remove(group.id());
+            remove(group);
             create(group);
-            updateCounter();
         };
 
         const sort = () => {
@@ -169,14 +193,36 @@ export default class BusStopGroupSidebarSection
                 .forEach(item => list.appendChild(item));
         };
 
-        const updateCounter = () => byId.forEach((data) => data.updateCounter());
+        const updateCounter = () => {
+            updateCounts();
+            byId.forEach((data, id) => data.updateCounter(counts.get(id)));
+        };
 
-        window.eventBus.subscribe('busStopGroupRemoved', remove);
-        window.eventBus.subscribe('busStopGroupLoaded', (group) => [update(group), sort()]);
-        window.eventBus.subscribe('busStopGroupsLoaded', (groups) => [groups.forEach(create), sort()]);
-        window.eventBus.subscribe('busStopLoaded', updateCounter);
-        window.eventBus.subscribe('busStopsLoaded', updateCounter);
+        const load = (busStopGroups) => {
+            busStopGroups.forEach(create);
+            updateCounter();
+            sort();
+        };
 
+        window.eventBus.subscribe('busStopGroup.event.loaded', load);
+        window.eventBus.subscribe('busStopGroup.event.updated', (busStopGroup) => {
+            if (busStopGroup.data()) {
+                if (byId.has(busStopGroup.id())) {
+                    update(busStopGroup);
+                } else {
+                    create(busStopGroup);
+                }
+            } else {
+                remove(busStopGroup);
+            }
+            updateCounter();
+            sort();
+        });
+        window.eventBus.subscribe('busStop.event.updated', updateCounter);
+        window.eventBus.subscribe('busStopSource.event.modeChanged', (currentMode) => this
+            .target.classList.toggle('hidden', currentMode !== 'select'));
+
+        this.setTarget = (target) => this.target = target;
         this.class = () => 'busStopGroupSection';
         this.title = () => 'Grupy przystankowe';
         this.icon = () => icon;

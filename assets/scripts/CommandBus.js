@@ -2,7 +2,7 @@ export default function CommandBus()
 {
     const commandCallbacksPairs = [];
 
-    this.register = function(commandType, callback) {
+    this.register = (commandType, callback) => {
         const commandCallbacksPair = findCommandCallbacksPair(commandType);
 
         if (commandCallbacksPair) {
@@ -12,7 +12,7 @@ export default function CommandBus()
         }
     };
 
-    this.dispatch = function(commandType, args) {
+    this.dispatch = (commandType, args) => {
         const commandCallbacksPair = findCommandCallbacksPair(commandType);
 
         if(!commandCallbacksPair) {
@@ -20,14 +20,16 @@ export default function CommandBus()
             return;
         }
 
-        return Promise.resolve(commandCallbacksPair.callback(args));
+        commandCallbacksPair.callback(args);
     };
 
-    function findCommandCallbacksPair(commandType) {
+    function findCommandCallbacksPair(commandType)
+    {
         return commandCallbacksPairs.find(commandObject => commandObject.commandType === commandType);
     }
 
-    function CommandCallbacksPair(commandType, callback) {
+    function CommandCallbacksPair(commandType, callback)
+    {
         this.commandType = commandType;
         this.callback = callback;
     }

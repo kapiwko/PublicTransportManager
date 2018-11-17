@@ -42,14 +42,14 @@ export default class Map
             if (map.hasFeatureAtPixel(event.pixel)) {
                 wasFeatureAtPixelWhenMove = true;
                 map.forEachFeatureAtPixel(event.pixel, (feature) => {
-                    window.eventBus.post('mapFeatureHovered', {
+                    window.eventBus.post('map.event.featureHovered', {
                         feature,
                         event,
                     });
                     return true;
                 });
             } else if(wasFeatureAtPixelWhenMove) {
-                window.eventBus.post('mapFeatureHovered', {
+                window.eventBus.post('map.event.featureHovered', {
                     feature: null,
                     event,
                 });
@@ -62,7 +62,7 @@ export default class Map
             if (map.hasFeatureAtPixel(event.pixel)) {
                 wasFeatureAtPixelWhenClick = true;
                 map.forEachFeatureAtPixel(event.pixel, (feature) => {
-                    window.eventBus.post('mapFeatureClicked', {
+                    window.eventBus.post('map.event.featureClicked', {
                         feature,
                         event,
                     });
@@ -70,7 +70,7 @@ export default class Map
                 });
             } else if(wasFeatureAtPixelWhenClick) {
                 wasFeatureAtPixelWhenClick = false;
-                window.eventBus.post('mapFeatureClicked', {
+                window.eventBus.post('map.event.featureClicked', {
                     feature: null,
                     event,
                 });
@@ -80,26 +80,26 @@ export default class Map
         const addLayer = (layer) => {
             map.addLayer(layer)
         };
-        window.commandBus.register('addLayerToMap', addLayer);
+        window.commandBus.register('map.command.addLayer', addLayer);
 
         const fitView = (extent) => {
             map.getView().fit(extent);
         };
-        window.commandBus.register('fitMapView', fitView);
+        window.commandBus.register('map.command.fitView', fitView);
 
         const addInteraction = (interaction) => {
             map.addInteraction(interaction);
         };
-        window.commandBus.register('addInteractionToMap', addInteraction);
+        window.commandBus.register('map.command.addInteraction', addInteraction);
 
         const removeInteraction = (interaction) => {
             map.removeInteraction(interaction);
         };
-        window.commandBus.register('removeInteractionFromMap', removeInteraction);
+        window.commandBus.register('map.command.removeInteraction', removeInteraction);
 
         const setCursor = (cursor) => {
             target.style.cursor = cursor;
         };
-        window.commandBus.register('setMapCursor', setCursor);
+        window.commandBus.register('map.command.setCursor', setCursor);
     }
 }

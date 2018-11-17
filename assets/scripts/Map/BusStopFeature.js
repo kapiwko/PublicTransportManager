@@ -5,8 +5,6 @@ import Style from "ol/style/Style";
 import IconCreator from "./IconCreator";
 import busIcon from "../../images/busStop.svg";
 
-const type = 'busStop';
-
 const normalStyle = new Style({
     image: (new IconCreator(24)).drawCircle('#ffffff').drawCircle('#406abf', 23).drawImage(busIcon).create(),
     zIndex: 4,
@@ -21,12 +19,11 @@ export default class BusStopFeature
 {
     constructor(busStop)
     {
-        const coordinates = fromLonLat([busStop.lon(), busStop.lat()]);
-        const geometry = new Point(coordinates);
+        const coordinates = fromLonLat(busStop.location());
         const feature = new Feature({
             coordinates,
-            geometry,
-            type,
+            geometry: new Point(coordinates),
+            type: 'busStop',
             feature: this,
             id: busStop.id(),
         });
