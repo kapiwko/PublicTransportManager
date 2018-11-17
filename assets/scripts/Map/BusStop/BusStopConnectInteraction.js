@@ -23,6 +23,13 @@ const connectionStyle = new Style({
     })
 });
 
+const connectedStyle = new Style({
+    stroke: new Stroke({
+        color: '#92ffa5',
+        width: 3
+    })
+});
+
 const removedStyle = new Style({
     stroke: new Stroke({
         color: '#ff2e49',
@@ -44,9 +51,10 @@ export default class BusStopConnectInteraction
     constructor(source, features)
     {
         let enabled = false;
-        let hovered = null;
+        let fromFeature = null;
+        let toFeature = null;
         let currentFeature = null;
-        const selected = new Set();
+        let lastHoveredFeature = null;
         const points = new Set();
         const connected = new Map();
 
@@ -55,26 +63,28 @@ export default class BusStopConnectInteraction
                 return;
             }
             const remove = event.originalEvent.ctrlKey;
-            if (hovered) {
-                if (!selected.has(hovered)) {
-                    features.get(hovered.get('id')).setStyle();
-                    hovered = null;
+            if (lastHoveredFeature) {
+                if (fromFeature !== lastHoveredFeature) {
+                    features.get(lastHoveredFeature.get('id')).setStyle();
+                    lastHoveredFeature = null;
                 }
-                if (!selected.size) {
-                    highlightConnectionsFrom(null, true);
-                }
+                highlightConnectionsFrom(fromFeature ? fromFeature.get('id') : null, true);
                 window.commandBus.dispatch('map.command.setCursor', '');
             }
             if (feature && source.hasFeature(feature) && feature.get('id')) {
-                if (!selected.size) {
-                    highlightConnectionsFrom(feature.get('id'), true);
+                const id = feature.get('id');
+                if (!fromFeature) {
+                    highlightConnectionsFrom(id, true);
+                } else {
+                    const connection = getByBusStops(fromFeature.get('id'), id);
+                    highlightConnections(connection ? [connection] : []);
                 }
-                if (!selected.has(feature)) {
-                    hovered = feature;
-                    features.get(hovered.get('id')).setStyle(highlightedStyle);
+                if (fromFeature !== feature) {
+                    lastHoveredFeature = feature;
+                    features.get(id).setStyle(highlightedStyle);
                 }
                 window.commandBus.dispatch('map.command.setCursor', 'pointer');
-            } else if (selected.size) {
+            } else if (fromFeature) {
                 window.commandBus.dispatch('map.command.setCursor', remove ? '' : 'crosshair');
             }
         });
@@ -85,16 +95,18 @@ export default class BusStopConnectInteraction
             }
             const remove = event.originalEvent.ctrlKey;
             if (feature && source.hasFeature(feature) && feature.get('id')) {
+                const id = feature.get('id');
                 drawLine(feature.getGeometry().getCoordinates());
-                if (!selected.size) {
-                    highlightConnectionsFrom(feature.get('id'));
-                    source.addFeature(currentFeature);
-                }
-                addFeature(feature);
-                if (selected.size > 1) {
+                if (!fromFeature) {
+                    fromFeature = feature;
+                    features.get(id).setStyle(selectedStyle);
+                    highlightConnectionsFrom(id);
+                } else if (feature !== fromFeature) {
+                    toFeature = feature;
+                    features.get(id).setStyle(selectedStyle);
                     connect(remove);
                 }
-            } else if (selected.size && !remove) {
+            } else if (fromFeature && !remove) {
                 drawLine(event.coordinate);
                 points.add(toLonLat(event.coordinate));
             }
@@ -111,16 +123,12 @@ export default class BusStopConnectInteraction
             highlightConnections(connections);
         };
 
-        const addFeature = (feature) => {
-            features.get(feature.get('id')).setStyle(selectedStyle);
-            selected.add(feature);
-        };
-
         const drawLine = (coord) => {
             if (!currentFeature) {
                 currentFeature = new Feature({
                     geometry: new LineString([coord]),
                 });
+                source.addFeature(currentFeature);
                 currentFeature.setStyle(connectionStyle);
             } else {
                 currentFeature.getGeometry().appendCoordinate(coord);
@@ -128,10 +136,8 @@ export default class BusStopConnectInteraction
         };
 
         const connect = (remove) => {
-            const s = [...selected.values()];
-            s.map((feature) => features.get(feature.get('id')).setStyle());
-            const from = s[0].get('id');
-            const to = s[1].get('id');
+            const from = fromFeature.get('id');
+            const to = toFeature.get('id');
             const connection = getByBusStops(from, to);
             if (connected.has(from + to)) {
                 source.removeFeature(connected.get(from + to).feature);
@@ -144,24 +150,32 @@ export default class BusStopConnectInteraction
                 points: [...points.values()],
                 feature: currentFeature,
             });
-            if (remove) {
-                currentFeature.setStyle(removedStyle);
-            }
-            selected.clear();
+            features.get(from).setStyle();
+            fromFeature = null;
+            features.get(to).setStyle();
+            toFeature = null;
             points.clear();
+            lastHoveredFeature = null;
+            currentFeature.setStyle(remove ? removedStyle : connectedStyle);
             currentFeature = false;
         };
 
         const clear = () => {
-            highlightConnections([]);
+            highlightConnectionsFrom(null, true);
             window.commandBus.dispatch('map.command.setCursor', '');
-            hovered = null;
+            lastHoveredFeature = null;
             if (currentFeature) {
                 source.removeFeature(currentFeature)
             }
             currentFeature = null;
-            [...selected.values()].map((feature) => features.get(feature.get('id')).setStyle());
-            selected.clear();
+            if (fromFeature) {
+                features.get(fromFeature.get('id')).setStyle();
+            }
+            fromFeature = null;
+            if (toFeature) {
+                features.get(toFeature.get('id')).setStyle();
+            }
+            toFeature = null;
             points.clear();
             [...connected.values()].map(({feature}) => source.removeFeature(feature));
             connected.clear();
