@@ -136,12 +136,11 @@ function createRemove(actions, group) {
     remove.title = 'Usuń tą grupę przystankową';
     remove.classList.add('remove');
     remove.addEventListener('click', () => {
-        listByGroup(group.id()).map((busStop) => {
-            window.commandBus.dispatch('busStop.command.update', [new BusStop(busStop.id(), {
-                ...busStop.data(),
-                group: null,
-            })]);
-        });
+        window.commandBus.dispatch('busStop.command.update', listByGroup(group.id())
+            .map((busStop) => new BusStop(busStop.id(), {
+            ...busStop.data(),
+            group: null,
+        })));
         window.commandBus.dispatch('busStopGroup.command.update', [new BusStopGroup(group.id(), null)]);
     });
     actions.appendChild(remove);

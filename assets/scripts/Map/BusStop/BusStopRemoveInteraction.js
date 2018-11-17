@@ -4,7 +4,7 @@ import {Style} from "ol/style";
 import IconCreator from "../IconCreator";
 import busIcon from "../../../images/busStop.svg";
 import BusStop from "../../Model/BusStop";
-import {toLonLat} from "ol/proj";
+import Connection from "../../Model/Connection";
 
 const selectedStyle = new Style({
     image: (new IconCreator(24)).drawCircle('#ffffff').drawCircle('#c55453', 23).drawImage(busIcon).create(),
@@ -15,6 +15,9 @@ const highlightedStyle = new Style({
     image: (new IconCreator(24)).drawCircle('#ffffff').drawCircle('#991f19', 23).drawImage(busIcon).create(),
     zIndex: 7,
 });
+
+const getByBusStop = (busStop) => window.queryBus.dispatch('connection.query.list')
+    .filter((connection) => connection.from() === busStop || connection.to() === busStop);
 
 export default class BusStopRemoveInteraction
 {
@@ -112,17 +115,14 @@ export default class BusStopRemoveInteraction
             window.eventBus.post('busStopRemove.event.countChanged', selected.size);
         });
 
-        const update = () => window.commandBus.dispatch('busStop.command.update', changed().map((feature) => {
-            const busStop = window.queryBus.dispatch('busStop.query.get', feature.get('id'));
-            return new BusStop(busStop.id(), {
-                ...busStop.data(),
-                location: toLonLat(feature.getGeometry().getCoordinates()),
-            });
-        }));
-
-        const remove = () => window.commandBus.dispatch('busStop.command.update', [...selected].map((id) => {
-            return new BusStop(id, null);
-        }));
+        const remove = () => {
+            window.commandBus.dispatch('busStop.command.update', [...selected]
+                .map((id) => {
+                    window.commandBus.dispatch('connection.command.update', getByBusStop(id)
+                        .map((connection) => new Connection(connection.id(), null)));
+                    return new BusStop(id, null)
+                }));
+        };
 
         const keydown = (event) => {
             switch(event.key) {
