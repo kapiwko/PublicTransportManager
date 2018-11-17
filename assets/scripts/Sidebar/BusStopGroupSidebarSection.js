@@ -220,7 +220,7 @@ export default class BusStopGroupSidebarSection
         });
         window.eventBus.subscribe('busStop.event.updated', updateCounter);
         window.eventBus.subscribe('busStopSource.event.modeChanged', (currentMode) => this
-            .target.classList.toggle('hidden', currentMode !== 'select'));
+            .target.classList.toggle('visible', currentMode === 'select'));
 
         this.setTarget = (target) => this.target = target;
         this.class = () => 'busStopGroupSection';

@@ -1,9 +1,9 @@
 import {DragBox, Select} from "ol/interaction";
 import {click, never, pointerMove, platformModifierKeyOnly} from "ol/events/condition";
 import {Style} from "ol/style";
-import IconCreator from "./IconCreator";
-import busIcon from "../../images/busStop.svg";
-import BusStop from "../Model/BusStop";
+import IconCreator from "../IconCreator";
+import busIcon from "../../../images/busStop.svg";
+import BusStop from "../../Model/BusStop";
 import {toLonLat} from "ol/proj";
 
 const selectedStyle = new Style({
@@ -42,10 +42,10 @@ export default class BusStopRemoveInteraction
         });
 
         const setStyle = (id) => {
-            const feature = features.get(id);
-            if (!feature) {
+            if (!features.has(id)) {
                 return;
             }
+            const feature = features.get(id);
             if (highlighted.has(id)) {
                 return feature.setStyle(highlightedStyle);
             }

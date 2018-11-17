@@ -52,6 +52,12 @@ export default class BusStopSidebarSection
             'Przystrzymaj Shift podczas klikania aby zaznaczyć kilka. ' +
             'Wciśnij Enter aby zatwierdzić usunięcie lub Esc aby anulować.' +
             '');
+        createMode('connect', 'Tryb łączenia', '' +
+            'Rozpocznij rysowanie połączenia klikając na symbol przystanku początkowego, ' +
+            'zakończ rysowanie klikając na symbmol przystanku końcowego. ' +
+            'Aby usunąć dane połącznie podczas klikania przystanku końcowego przytrzymaj Ctrl. ' +
+            'Wciśnij Enter aby zatwierdzić utworzone połączenia lub Esc aby anulować.' +
+            '');
 
         const status = createStatus(header);
 
@@ -60,8 +66,11 @@ export default class BusStopSidebarSection
         window.eventBus.subscribe('busStopRemove.event.countChanged', (qty) => status.innerText = 'Do usunięcia: ' + qty);
         window.eventBus.subscribe('busStopMove.event.countChanged', (qty) => status.innerText = 'Do przesunięcia: ' + qty);
         window.eventBus.subscribe('busStopSource.event.modeChanged', (currentMode) => {
+            this.target.classList.toggle('visible', currentMode);
             modes.forEach((data, mode) => data.button.classList.toggle('active', mode === currentMode));
-            main.innerText = modes.get(currentMode).description;
+            if (currentMode) {
+                main.innerText = modes.get(currentMode).description;
+            }
         });
 
         this.setTarget = (target) => this.target = target;

@@ -1,9 +1,9 @@
 import {Draw} from "ol/interaction";
 import {Style} from "ol/style";
 import {toLonLat} from "ol/proj";
-import IconCreator from "./IconCreator";
-import busIcon from "../../images/busStop.svg";
-import BusStop from "../Model/BusStop";
+import IconCreator from "../IconCreator";
+import busIcon from "../../../images/busStop.svg";
+import BusStop from "../../Model/BusStop";
 
 export default class BusStopCreateInteraction
 {

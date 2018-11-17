@@ -2,8 +2,8 @@ import Point from "ol/geom/Point";
 import {fromLonLat} from "ol/proj";
 import Feature from "ol/Feature";
 import Style from "ol/style/Style";
-import IconCreator from "./IconCreator";
-import busIcon from "../../images/busStop.svg";
+import IconCreator from "../IconCreator";
+import busIcon from "../../../images/busStop.svg";
 
 const normalStyle = new Style({
     image: (new IconCreator(24)).drawCircle('#ffffff').drawCircle('#406abf', 23).drawImage(busIcon).create(),

@@ -8,8 +8,13 @@ use App\Command\BusStop\UpdateBusStopCommand;
 use App\Command\BusStopGroup\CreateBusStopGroupCommand;
 use App\Command\BusStopGroup\DeleteBusStopGroupCommand;
 use App\Command\BusStopGroup\UpdateBusStopGroupCommand;
+use App\Command\Connection\CreateConnectionCommand;
+use App\Command\Connection\DeleteConnectionCommand;
+use App\Command\Connection\UpdateConnectionCommand;
 use App\Query\GetAllBusStopGroupsQuery;
 use App\Query\GetAllBusStopsQuery;
+use App\Query\GetAllConnectionsQuery;
+use CrEOF\Spatial\PHP\Types\Geometry\LineString;
 use CrEOF\Spatial\PHP\Types\Geometry\Point;
 use Ramsey\Uuid\Uuid;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -35,7 +40,8 @@ final class DefaultController extends Controller
      */
     public function downloadData(
         GetAllBusStopsQuery $getAllBusStops,
-        GetAllBusStopGroupsQuery $getAllBusStopGroups
+        GetAllBusStopGroupsQuery $getAllBusStopGroups,
+        GetAllConnectionsQuery $getAllConnections
     ): Response
     {
         $data = [
@@ -46,6 +52,10 @@ final class DefaultController extends Controller
             [
                 'type' => 'busStopGroup',
                 'items' => $getAllBusStopGroups(),
+            ],
+            [
+                'type' => 'connection',
+                'items' => $getAllConnections(),
             ],
         ];
         return new JsonResponse($data);
@@ -58,7 +68,8 @@ final class DefaultController extends Controller
         Request $request,
         MessageBusInterface $commandBus,
         GetAllBusStopsQuery $getAllBusStops,
-        GetAllBusStopGroupsQuery $getAllBusStopGroups
+        GetAllBusStopGroupsQuery $getAllBusStopGroups,
+        GetAllConnectionsQuery $getAllConnections
     ): Response
     {
         foreach (json_decode($request->getContent(), true) as $data) {
@@ -99,6 +110,29 @@ final class DefaultController extends Controller
                         } elseif($busStopGroup) {
                             $commandBus->dispatch(new DeleteBusStopGroupCommand($id));
                         }
+                    }
+                    break;
+                case 'connection':
+                    $connections = $getAllConnections();
+                    foreach ($data['items'] as $item) {
+                        $id = Uuid::fromString($item['id']);
+                        $connection = $connections->get($id);
+                        $connectionData = $item['data'];
+                        if ($connectionData) {
+                            $location = new LineString(array_map(function (array $point) {
+                                return new Point($point[0], $point[1]);
+                            }, $connectionData['geometry']));
+                            if ($connection) {
+                                $commandBus->dispatch(new UpdateConnectionCommand($id, $location));
+                            } else {
+                                $from = $connectionData['from'] ? Uuid::fromString($connectionData['from']) : null;
+                                $to = $connectionData['to'] ? Uuid::fromString($connectionData['to']) : null;
+                                $commandBus->dispatch(new CreateConnectionCommand($id, $from, $to, $location));
+                            }
+                        } elseif($connection) {
+                            $commandBus->dispatch(new DeleteConnectionCommand($id));
+                        }
+
                     }
                     break;
             }

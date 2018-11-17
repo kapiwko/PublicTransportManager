@@ -1,9 +1,9 @@
 import {Style} from "ol/style";
 import {Modify} from "ol/interaction";
 import {toLonLat} from "ol/proj";
-import IconCreator from "./IconCreator";
-import busIcon from "../../images/busStop.svg";
-import BusStop from "../Model/BusStop";
+import IconCreator from "../IconCreator";
+import busIcon from "../../../images/busStop.svg";
+import BusStop from "../../Model/BusStop";
 
 const selectedStyle = new Style({
     image: (new IconCreator(24)).drawCircle('#ffffff').drawCircle('#bb68b2', 23).drawImage(busIcon).create(),

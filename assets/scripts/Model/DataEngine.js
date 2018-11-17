@@ -1,6 +1,7 @@
 import Fetch from "../Fetch";
 import BusStop from "./BusStop";
 import BusStopGroup from "./BusStopGroup";
+import Connection from "./Connection";
 import Data from "./Data";
 
 export default class DataEngine {
@@ -33,6 +34,8 @@ export default class DataEngine {
                     return new BusStop(id, data);
                 case 'busStopGroup':
                     return new BusStopGroup(id, data);
+                case 'connection':
+                    return new Connection(id, data);
                 default:
                     return new Data(type, id, data);
             }
@@ -59,8 +62,6 @@ export default class DataEngine {
                     data: data.data(),
                 })),
             }));
-
-            console.log(data);
 
             Fetch.post('uploadData', data).then(() => {
                 moveData(syncing, all);

@@ -4,6 +4,7 @@ import BusStopSelectInteraction from "./BusStopSelectInteraction";
 import BusStopCreateInteraction from "./BusStopCreateInteraction";
 import BusStopMoveInteraction from "./BusStopMoveInteraction";
 import BusStopRemoveInteraction from "./BusStopRemoveInteraction";
+import BusStopConnectInteraction from "./BusStopConnectInteraction";
 
 export default class BusStopSource
 {
@@ -15,7 +16,10 @@ export default class BusStopSource
 
         const setMode = (mode) => {
             interactions.forEach((i) => i.disable());
-            interactions.get(mode).enable();
+            if (mode) {
+                interactions.get(mode).enable();
+            }
+            window.eventBus.post('busStopLayer.command.show', mode);
             window.eventBus.post('busStopSource.event.modeChanged', mode);
         };
 
@@ -39,6 +43,7 @@ export default class BusStopSource
             interactions.set('create', new BusStopCreateInteraction(source, features));
             interactions.set('move', new BusStopMoveInteraction(source, features));
             interactions.set('remove', new BusStopRemoveInteraction(source, features));
+            interactions.set('connect', new BusStopConnectInteraction(source, features));
             setMode('select');
             window.eventBus.post('busStopSource.event.loaded');
         };

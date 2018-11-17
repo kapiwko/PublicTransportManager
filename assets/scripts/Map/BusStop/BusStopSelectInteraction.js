@@ -1,8 +1,8 @@
 import {DragBox, Select} from "ol/interaction";
 import {click, never, pointerMove, platformModifierKeyOnly} from "ol/events/condition";
 import {Style} from "ol/style";
-import IconCreator from "./IconCreator";
-import busIcon from "../../images/busStop.svg";
+import IconCreator from "../IconCreator";
+import busIcon from "../../../images/busStop.svg";
 
 const selectedStyle = new Style({
     image: (new IconCreator(24)).drawCircle('#ffffff').drawCircle('#ffbf58', 23).drawImage(busIcon).create(),
@@ -40,13 +40,17 @@ export default class BusStopSelectInteraction
         });
 
         const setStyle = (id) => {
+            if (!features.has(id)) {
+                return;
+            }
+            const feature = features.get(id);
             if (highlighted.has(id)) {
-                return features.get(id).setStyle(highlightedStyle);
+                return feature.setStyle(highlightedStyle);
             }
             if (selected.has(id)) {
-                return features.get(id).setStyle(selectedStyle);
+                return feature.setStyle(selectedStyle);
             }
-            features.get(id).setStyle();
+            feature.setStyle();
         };
 
         const updateCollection = (collection, ids, onlyAdd) => {
@@ -82,13 +86,17 @@ export default class BusStopSelectInteraction
         };
 
         clickInteraction.on('select', (event) => {
-            const ids = event.target.getFeatures().getArray().map((feature) => feature.get('id'));
+            const ids = event.target.getFeatures().getArray()
+                .filter((feature) => source.hasFeature(feature))
+                .map((feature) => feature.get('id'));
             updateCollection(selected, ids);
             window.eventBus.post('busStopSelect.event.countChanged', selected.size);
         });
 
         hoverInteraction.on('select', (event) => {
-            const ids = event.target.getFeatures().getArray().map((feature) => feature.get('id'));
+            const ids = event.target.getFeatures().getArray()
+                .filter((feature) => source.hasFeature(feature))
+                .map((feature) => feature.get('id'));
             updateCollection(highlighted, ids);
             window.commandBus.dispatch('map.command.setCursor', ids.length ? 'pointer' : '');
         });

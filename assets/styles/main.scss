@@ -84,8 +84,9 @@ a {
   & > section {
     background-color: #d2cfd0;
     margin: 5px;
-    &.hidden {
-      display: none;
+    display: none;
+    &.visible {
+      display: block;
     }
     & > header {
       padding: 5px;
@@ -144,6 +145,9 @@ a {
       }
       &.remove {
         background-image: url('../images/remove.svg');
+      }
+      &.connect {
+        background-image: url('../images/connect.svg');
       }
     }
     & > .status {

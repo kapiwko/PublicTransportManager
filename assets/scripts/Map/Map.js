@@ -40,7 +40,6 @@ export default class Map
                 return;
             }
             if (map.hasFeatureAtPixel(event.pixel)) {
-                wasFeatureAtPixelWhenMove = true;
                 map.forEachFeatureAtPixel(event.pixel, (feature) => {
                     window.eventBus.post('map.event.featureHovered', {
                         feature,
@@ -48,19 +47,16 @@ export default class Map
                     });
                     return true;
                 });
-            } else if(wasFeatureAtPixelWhenMove) {
+            } else {
                 window.eventBus.post('map.event.featureHovered', {
                     feature: null,
                     event,
                 });
-                wasFeatureAtPixelWhenMove = false;
             }
         });
 
-        let wasFeatureAtPixelWhenClick = false;
         map.on('click', (event) => {
             if (map.hasFeatureAtPixel(event.pixel)) {
-                wasFeatureAtPixelWhenClick = true;
                 map.forEachFeatureAtPixel(event.pixel, (feature) => {
                     window.eventBus.post('map.event.featureClicked', {
                         feature,
@@ -68,8 +64,7 @@ export default class Map
                     });
                     return true;
                 });
-            } else if(wasFeatureAtPixelWhenClick) {
-                wasFeatureAtPixelWhenClick = false;
+            } else {
                 window.eventBus.post('map.event.featureClicked', {
                     feature: null,
                     event,
@@ -101,5 +96,10 @@ export default class Map
             target.style.cursor = cursor;
         };
         window.commandBus.register('map.command.setCursor', setCursor);
+
+        const setLoading = (s) => {
+            target.classList.toggle('loading', s);
+        };
+        window.commandBus.register('map.command.setLoading', setLoading);
     }
 }
