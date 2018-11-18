@@ -4,6 +4,7 @@ import {toLonLat} from "ol/proj";
 import IconCreator from "../IconCreator";
 import busIcon from "../../../images/busStop.svg";
 import BusStop from "../../Model/BusStop";
+import Connection from "../../Model/Connection";
 
 const selectedStyle = new Style({
     image: (new IconCreator(24)).drawCircle('#ffffff').drawCircle('#bb68b2', 23).drawImage(busIcon).create(),
@@ -14,6 +15,9 @@ const highlightedStyle = new Style({
     image: (new IconCreator(24)).drawCircle('#ffffff').drawCircle('#992f7f', 23).drawImage(busIcon).create(),
     zIndex: 7,
 });
+
+const getByBusStop = (busStop) => window.queryBus.dispatch('connection.query.list')
+    .filter((connection) => connection.from() === busStop || connection.to() === busStop);
 
 export default class BusStopMoveInteraction
 {
@@ -44,13 +48,30 @@ export default class BusStopMoveInteraction
             feature.getGeometry().setCoordinates(feature.get('coordinates'));
         });
 
-        const update = () => window.commandBus.dispatch('busStop.command.update', changed().map((feature) => {
-            const busStop = window.queryBus.dispatch('busStop.query.get', feature.get('id'));
-            return new BusStop(busStop.id(), {
-                ...busStop.data(),
-                location: toLonLat(feature.getGeometry().getCoordinates()),
-            });
-        }));
+        const update = () => {
+            window.commandBus.dispatch('busStop.command.update', changed().map((feature) => {
+                const busStop = window.queryBus.dispatch('busStop.query.get', feature.get('id'));
+                const location = toLonLat(feature.getGeometry().getCoordinates());
+                window.commandBus.dispatch('connection.command.update', getByBusStop(busStop.id())
+                    .map((connection) => {
+                        const geometry = connection.geometry();
+                        if (connection.from() === busStop.id()) {
+                            geometry[0] = location;
+                        }
+                        if (connection.to() === busStop.id()) {
+                            geometry[geometry.length - 1] = location;
+                        }
+                        return new Connection(connection.id(), {
+                            ...connection.data(),
+                            geometry,
+                        })
+                    }));
+                return new BusStop(busStop.id(), {
+                    ...busStop.data(),
+                    location,
+                });
+            }));
+        }
 
         window.eventBus.subscribe('map.event.featureHovered', (d) => {
             if (!enabled) {

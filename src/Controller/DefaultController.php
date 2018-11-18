@@ -8,6 +8,7 @@ use App\Command\BusStop\UpdateBusStopCommand;
 use App\Command\BusStopGroup\CreateBusStopGroupCommand;
 use App\Command\BusStopGroup\DeleteBusStopGroupCommand;
 use App\Command\BusStopGroup\UpdateBusStopGroupCommand;
+use App\Command\CommandInterface;
 use App\Command\Connection\CreateConnectionCommand;
 use App\Command\Connection\DeleteConnectionCommand;
 use App\Command\Connection\UpdateConnectionCommand;
@@ -72,6 +73,22 @@ final class DefaultController extends Controller
         GetAllConnectionsQuery $getAllConnections
     ): Response
     {
+        $commands = [
+            CreateBusStopGroupCommand::class => [],
+            UpdateBusStopGroupCommand::class => [],
+            CreateBusStopCommand::class => [],
+            UpdateBusStopCommand::class => [],
+            CreateConnectionCommand::class => [],
+            UpdateConnectionCommand::class => [],
+            DeleteBusStopGroupCommand::class => [],
+            DeleteBusStopCommand::class => [],
+            DeleteConnectionCommand::class => [],
+        ];
+
+        $add = function(CommandInterface $command) use (&$commands): void {
+            $commands[\get_class($command)][] = $command;
+        };
+
         foreach (json_decode($request->getContent(), true) as $data) {
             switch ($data['type']) {
                 case 'busStop':
@@ -84,12 +101,12 @@ final class DefaultController extends Controller
                             $location = new Point($busStopData['location'][0], $busStopData['location'][1]);
                             $group = $busStopData['group'] ? Uuid::fromString($busStopData['group']) : null;
                             if ($busStop) {
-                                $commandBus->dispatch(new UpdateBusStopCommand($id, $location, $group));
+                                $add(new UpdateBusStopCommand($id, $location, $group));
                             } else {
-                                $commandBus->dispatch(new CreateBusStopCommand($id, $location, $group));
+                                $add(new CreateBusStopCommand($id, $location, $group));
                             }
                         } elseif($busStop) {
-                            $commandBus->dispatch(new DeleteBusStopCommand($id));
+                            $add(new DeleteBusStopCommand($id));
                         }
 
                     }
@@ -103,12 +120,12 @@ final class DefaultController extends Controller
                         if ($busStopGroupData) {
                             $name = $busStopGroupData['name'];
                             if ($busStopGroup) {
-                                $commandBus->dispatch(new UpdateBusStopGroupCommand($id, $name));
+                                $add(new UpdateBusStopGroupCommand($id, $name));
                             } else {
-                                $commandBus->dispatch(new CreateBusStopGroupCommand($id, $name));
+                                $add(new CreateBusStopGroupCommand($id, $name));
                             }
                         } elseif($busStopGroup) {
-                            $commandBus->dispatch(new DeleteBusStopGroupCommand($id));
+                            $add(new DeleteBusStopGroupCommand($id));
                         }
                     }
                     break;
@@ -123,20 +140,27 @@ final class DefaultController extends Controller
                                 return new Point($point[0], $point[1]);
                             }, $connectionData['geometry']));
                             if ($connection) {
-                                $commandBus->dispatch(new UpdateConnectionCommand($id, $location));
+                                $add(new UpdateConnectionCommand($id, $location));
                             } else {
                                 $from = $connectionData['from'] ? Uuid::fromString($connectionData['from']) : null;
                                 $to = $connectionData['to'] ? Uuid::fromString($connectionData['to']) : null;
-                                $commandBus->dispatch(new CreateConnectionCommand($id, $from, $to, $location));
+                                $add(new CreateConnectionCommand($id, $from, $to, $location));
                             }
                         } elseif($connection) {
-                            $commandBus->dispatch(new DeleteConnectionCommand($id));
+                            $add(new DeleteConnectionCommand($id));
                         }
 
                     }
                     break;
             }
         }
+
+        foreach ($commands as $group) {
+            foreach ($group as $command) {
+                $commandBus->dispatch($command);
+            }
+        }
+
         return new JsonResponse([]);
     }
 }
