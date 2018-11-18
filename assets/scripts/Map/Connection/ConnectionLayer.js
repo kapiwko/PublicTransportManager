@@ -12,7 +12,7 @@ export default class ConnectionLayer
 
         this.layer = () => layer;
 
-        window.commandBus.register('connectionLayer.event.show', (s) => {
+        window.commandBus.register('connectionLayer.command.show', (s) => {
             layer.setVisible(s);
         });
     }

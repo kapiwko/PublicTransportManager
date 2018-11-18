@@ -209,6 +209,7 @@ export default class BusStopConnectInteraction
             }
             enabled = true;
             window.document.addEventListener('keydown', keydown);
+            window.commandBus.dispatch('connectionLayer.command.show', true);
             window.commandBus.dispatch('map.command.setCursor', '');
         };
 
@@ -219,6 +220,7 @@ export default class BusStopConnectInteraction
             enabled = false;
             clear();
             window.document.removeEventListener('keydown', keydown);
+            window.commandBus.dispatch('connectionLayer.command.show', false);
             window.commandBus.dispatch('map.command.setCursor', '');
         };
     }

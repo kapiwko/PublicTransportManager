@@ -12,7 +12,7 @@ export default class BusStopLayer
 
         this.layer = () => layer;
 
-        window.commandBus.register('busStopLayer.event.show', (s) => {
+        window.commandBus.register('busStopLayer.command.show', (s) => {
             layer.setVisible(s);
         });
 

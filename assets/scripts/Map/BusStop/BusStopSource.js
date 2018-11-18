@@ -19,7 +19,7 @@ export default class BusStopSource
             if (mode) {
                 interactions.get(mode).enable();
             }
-            window.eventBus.post('busStopLayer.command.show', mode);
+            window.commandBus.dispatch('busStopLayer.command.show', mode);
             window.eventBus.post('busStopSource.event.modeChanged', mode);
         };
 
